@@ -1,9 +1,8 @@
 import React, { useState, useEffect } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
-import Hero from './components/Hero';
-import Timeline from './components/Timeline';
-import Chat from './components/Chat';
-import Quiz from './components/Quiz';
+import Home from './pages/Home';
+import Gallery from './pages/Gallery';
 import { ThemeProvider } from './context/ThemeContext';
 import { timelineData } from './data/timelineData';
 
@@ -27,36 +26,32 @@ function App() {
 
   return (
     <ThemeProvider>
-      <div className="min-h-screen transition-colors duration-300 relative">
-        {isOffline && (
-          <div className="bg-red-500 text-white text-center py-2 px-4 z-[60] fixed top-0 w-full font-bold shadow-lg">
-            ⚠️ You are currently offline. Some features like the AI Chat and Quiz may not work.
-          </div>
-        )}
-        
-        <Header 
-          exploredCount={exploredStages.length} 
-          totalStages={timelineData.length} 
-        />
-        
-        <main className="pb-24">
-          <Hero />
+      <Router>
+        <div className="min-h-screen transition-colors duration-300 relative">
+          {isOffline && (
+            <div className="bg-red-500 text-white text-center py-2 px-4 z-[60] fixed top-0 w-full font-bold shadow-lg">
+              ⚠️ You are currently offline. Some features like the AI Chat and Quiz may not work.
+            </div>
+          )}
           
-          <div id="timeline">
-            <Timeline 
-              exploredStages={exploredStages} 
-              setExploredStages={setExploredStages}
-              activeStageId={activeStageId}
-              setActiveStageId={setActiveStageId}
-            />
-          </div>
-
-          <div className="max-w-6xl mx-auto px-4 grid md:grid-cols-2 gap-8 my-12">
-            <Chat setActiveStageId={setActiveStageId} />
-            <Quiz />
-          </div>
-        </main>
-      </div>
+          <Header 
+            exploredCount={exploredStages.length} 
+            totalStages={timelineData.length} 
+          />
+          
+          <Routes>
+            <Route path="/" element={
+              <Home 
+                exploredStages={exploredStages} 
+                setExploredStages={setExploredStages}
+                activeStageId={activeStageId}
+                setActiveStageId={setActiveStageId}
+              />
+            } />
+            <Route path="/gallery" element={<Gallery />} />
+          </Routes>
+        </div>
+      </Router>
     </ThemeProvider>
   );
 }

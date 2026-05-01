@@ -98,7 +98,7 @@ const Quiz = () => {
             {error && <div className="text-red-500 mb-4 bg-red-500/10 p-3 rounded-lg">{error}</div>}
             <button 
               onClick={startQuiz}
-              className="bg-[#C8A96E] hover:bg-[#b0935d] text-slate-900 px-8 py-3 rounded-full font-bold transition-all shadow-lg"
+              className="bg-[#C8A96E] hover:bg-[#b0935d] text-slate-900 px-8 py-3 rounded-full font-bold transition-all shadow-lg focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#C8A96E] focus-visible:outline-offset-4"
             >
               Start Quiz
             </button>
@@ -131,7 +131,7 @@ const Quiz = () => {
 
             <div className="space-y-3 flex-1">
               {questions[currentQuestionIndex].options.map((opt, idx) => {
-                let btnClass = "w-full text-left p-4 rounded-xl border transition-all font-body ";
+                let btnClass = "w-full text-left p-4 rounded-xl border transition-all font-body focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#C8A96E] focus-visible:outline-offset-2 ";
                 if (selectedAnswer === null) {
                   btnClass += "bg-slate-800/50 light:bg-slate-100 border-slate-700 light:border-slate-300 hover:border-[#C8A96E] hover:bg-slate-800 light:hover:bg-slate-200";
                 } else {
@@ -183,7 +183,7 @@ const Quiz = () => {
 
             <button 
               onClick={startQuiz}
-              className="bg-transparent border-2 border-[#C8A96E] text-[#C8A96E] hover:bg-[#C8A96E] hover:text-slate-900 px-8 py-3 rounded-full font-bold transition-colors"
+              className="bg-transparent border-2 border-[#C8A96E] text-[#C8A96E] hover:bg-[#C8A96E] hover:text-slate-900 px-8 py-3 rounded-full font-bold transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#C8A96E] focus-visible:outline-offset-4"
             >
               Try Again
             </button>

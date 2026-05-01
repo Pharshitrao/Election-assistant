@@ -54,12 +54,14 @@ const Timeline = ({ exploredStages, setExploredStages, activeStageId, setActiveS
         {/* Glassmorphic Search Bar */}
         <div className="relative w-full md:w-72">
           <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400">🔍</span>
+          <label htmlFor="timeline-search" className="sr-only">Search timeline stages</label>
           <input
+            id="timeline-search"
             type="text"
             placeholder="Search stages..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            className="w-full bg-slate-800/40 light:bg-white/40 backdrop-blur-md border border-slate-700 light:border-slate-300 rounded-full py-2 pl-10 pr-4 focus:outline-none focus:border-[#C8A96E] transition-colors"
+            className="w-full bg-slate-800/40 light:bg-white/40 backdrop-blur-md border border-slate-700 light:border-slate-300 rounded-full py-2 pl-10 pr-4 focus:outline-none focus:border-[#C8A96E] focus-visible:ring-2 focus-visible:ring-[#C8A96E] transition-colors"
           />
         </div>
       </div>
@@ -88,8 +90,12 @@ const Timeline = ({ exploredStages, setExploredStages, activeStageId, setActiveS
                 )}
 
                 <button
+                  id={`stage-btn-${stage.id}`}
+                  aria-expanded={isExpanded}
+                  aria-controls={isExpanded ? "stage-detail-panel" : undefined}
+                  aria-label={`Stage ${stage.stageNumber}: ${stage.title}`}
                   onClick={() => handleCardClick(stage.id)}
-                  className={`w-full h-full p-0 rounded-2xl text-left transition-all duration-300 border group animate-[fade-slide-up_0.6s_cubic-bezier(0.16,1,0.3,1)_forwards] opacity-0 overflow-hidden relative
+                  className={`w-full h-full p-0 rounded-2xl text-left transition-all duration-300 border group animate-[fade-slide-up_0.6s_cubic-bezier(0.16,1,0.3,1)_forwards] opacity-0 overflow-hidden relative focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#C8A96E] focus-visible:outline-offset-4
                     ${isExpanded 
                       ? 'border-[#C8A96E] shadow-[0_0_20px_rgba(200,169,110,0.3)]' 
                       : 'border-slate-700/50 light:border-slate-300 hover:border-[#C8A96E]/50 hover:-translate-y-2'
@@ -131,7 +137,7 @@ const Timeline = ({ exploredStages, setExploredStages, activeStageId, setActiveS
           if (!stage) return null;
 
           return (
-            <div className="glass-panel rounded-3xl p-6 md:p-10 relative overflow-hidden">
+            <div id="stage-detail-panel" className="glass-panel rounded-3xl p-6 md:p-10 relative overflow-hidden" role="region" aria-labelledby={`stage-btn-${stage.id}`}>
               <div 
                 className="absolute top-0 left-0 w-2 h-full"
                 style={{ backgroundColor: stage.accentColor }}

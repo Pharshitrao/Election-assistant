@@ -1,6 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { quickQuestions } from '../data/quickQuestions';
 import { timelineData } from '../data/timelineData';
+import { GoogleGenerativeAI } from "@google/generative-ai";
+
+const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
+const model = genAI.getGenerativeModel({ 
+  model: "gemini-2.5-flash",
+  systemInstruction: "You are a nonpartisan, civic-focused Indian Election Process Assistant. Explain concepts about the Indian electoral system (Lok Sabha, Rajya Sabha, Election Commission of India, EVMs, VVPATs, etc.) in simple, accessible language. Do not express political opinions, favor any candidate or party, or discuss current political controversies. Stick strictly to the mechanics, history, and rules of the Indian election process."
+});
 
 const Chat = ({ setActiveStageId }) => {
   const [messages, setMessages] = useState(() => {
@@ -57,22 +64,22 @@ const Chat = ({ setActiveStageId }) => {
     setIsLoading(true);
 
     try {
-      // MOCK LOGIC - No API Key required
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate delay
-
-      const inputLower = textToSubmit.toLowerCase();
-      let responseContent = "That's an interesting question about the Indian elections! Our guide above covers many of these details in the step-by-step timeline. Is there a specific stage you'd like to know more about?";
-
-      if (inputLower.includes('eci') || inputLower.includes('commission')) {
-        responseContent = "The Election Commission of India (ECI) is the constitutional body that oversees the entire election process to ensure it is free and fair.";
-      } else if (inputLower.includes('evm') || inputLower.includes('vote')) {
-        responseContent = "Electronic Voting Machines (EVMs) have been used in India since the late 90s. They are now always used with VVPAT (Voter Verifiable Paper Audit Trail) for transparency.";
-      } else if (inputLower.includes('lok sabha')) {
-        responseContent = "The Lok Sabha is the House of the People. Members are elected for a 5-year term to represent their constituencies.";
-      } else if (inputLower.includes('prime minister')) {
-        responseContent = "The Prime Minister is chosen by the party or coalition that holds the majority in the Lok Sabha.";
+      const firstUserIndex = messages.findIndex(m => m.role === 'user');
+      let geminiHistory = [];
+      if (firstUserIndex !== -1) {
+        geminiHistory = messages.slice(firstUserIndex).map(msg => ({
+          role: msg.role === 'assistant' ? 'model' : 'user',
+          parts: [{ text: msg.content }]
+        }));
       }
-      
+
+      const chat = model.startChat({
+        history: geminiHistory
+      });
+
+      const result = await chat.sendMessage(textToSubmit);
+      const responseContent = result.response.text();
+
       setMessages(prev => [...prev, {
         role: 'assistant',
         content: responseContent
@@ -80,7 +87,7 @@ const Chat = ({ setActiveStageId }) => {
 
     } catch (err) {
       console.error("Chat error:", err);
-      setError(err.message);
+      setError(err.message || "An error occurred.");
       // Remove the user message that failed so they can retry easily
       setMessages(prev => prev.slice(0, -1));
       setInput(textToSubmit); // Put text back in input box
@@ -171,7 +178,11 @@ const Chat = ({ setActiveStageId }) => {
         )}
 
         {/* Messages Area */}
-        <div className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6">
+        <div 
+          className="flex-1 overflow-y-auto p-4 md:p-6 space-y-6"
+          aria-live="polite"
+          aria-atomic="false"
+        >
           {messages.map((msg, index) => (
             <div 
               key={index} 
@@ -229,7 +240,7 @@ const Chat = ({ setActiveStageId }) => {
                 key={idx}
                 onClick={() => handleSend(q)}
                 disabled={isLoading}
-                className="text-xs font-body bg-slate-800/50 light:bg-white border border-slate-700 hover:border-[#C8A96E] text-slate-300 py-2 px-4 rounded-full transition-all disabled:opacity-50 hover:bg-slate-800"
+                className="text-xs font-body bg-slate-800/50 light:bg-white border border-slate-700 hover:border-[#C8A96E] text-slate-300 py-2 px-4 rounded-full transition-all disabled:opacity-50 hover:bg-slate-800 focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#C8A96E] focus-visible:outline-offset-2"
               >
                 {q}
               </button>
@@ -238,19 +249,22 @@ const Chat = ({ setActiveStageId }) => {
 
           {/* Input Form */}
           <form onSubmit={handleSubmit} className="flex gap-2">
+            <label htmlFor="chat-input" className="sr-only">Ask a question about the election</label>
             <input
+              id="chat-input"
               type="text"
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={handleKeyDown}
               placeholder="Ask about the election..."
               disabled={isLoading}
-              className="flex-1 bg-slate-800/80 light:bg-white border border-slate-700 light:border-slate-300 rounded-xl px-4 py-3 md:py-4 focus:outline-none focus:border-[#C8A96E] focus:ring-1 focus:ring-[#C8A96E] transition-all font-body text-slate-200 placeholder-slate-500 disabled:opacity-50"
+              className="flex-1 bg-slate-800/80 light:bg-white border border-slate-700 light:border-slate-300 rounded-xl px-4 py-3 md:py-4 focus:outline-none focus:border-[#C8A96E] focus:ring-2 focus:ring-[#C8A96E] focus-visible:ring-2 focus-visible:ring-[#C8A96E] transition-all font-body text-slate-200 placeholder-slate-500 disabled:opacity-50"
             />
             <button
               type="submit"
               disabled={isLoading || !input.trim()}
-              className="bg-[#C8A96E] hover:bg-[#b0935d] text-slate-900 px-6 py-3 rounded-xl font-bold transition-all disabled:opacity-50 flex-shrink-0 shadow-[0_0_15px_rgba(200,169,110,0.3)] hover:shadow-[0_0_20px_rgba(200,169,110,0.5)] transform hover:-translate-y-0.5 active:translate-y-0"
+              className="bg-[#C8A96E] hover:bg-[#b0935d] text-slate-900 px-6 py-3 rounded-xl font-bold transition-all disabled:opacity-50 flex-shrink-0 shadow-[0_0_15px_rgba(200,169,110,0.3)] hover:shadow-[0_0_20px_rgba(200,169,110,0.5)] transform hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline focus-visible:outline-2 focus-visible:outline-white focus-visible:outline-offset-2"
+              aria-label="Send message"
             >
               Send
             </button>

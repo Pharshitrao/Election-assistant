@@ -15,16 +15,16 @@ const Hero = () => {
         <div className="inline-block mb-4 px-4 py-1 rounded-full bg-[#C8A96E]/20 border border-[#C8A96E]/50 text-[#C8A96E] font-bold text-sm tracking-widest uppercase">
           Interactive Guide
         </div>
-        <h1 className="text-5xl md:text-7xl font-bold font-heading mb-6 text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 light:from-slate-900 light:to-slate-600 drop-shadow-sm">
+        <h2 className="text-5xl md:text-7xl font-bold font-heading mb-6 text-transparent bg-clip-text bg-gradient-to-r from-white to-slate-400 light:from-slate-900 light:to-slate-600 drop-shadow-sm">
           The Indian <br/> Election Journey
-        </h1>
+        </h2>
         <p className="text-lg md:text-xl font-body text-slate-300 light:text-slate-600 mb-8 max-w-2xl mx-auto">
           Explore the step-by-step process of how India elects its Lok Sabha members. Test your knowledge or ask our AI Assistant any questions.
         </p>
         
         <button 
           onClick={() => document.getElementById('timeline')?.scrollIntoView({ behavior: 'smooth' })}
-          className="bg-[#C8A96E] hover:bg-[#b0935d] text-slate-900 px-8 py-4 rounded-full font-bold transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(200,169,110,0.4)]"
+          className="bg-[#C8A96E] hover:bg-[#b0935d] text-slate-900 px-8 py-4 rounded-full font-bold transition-all transform hover:scale-105 shadow-[0_0_20px_rgba(200,169,110,0.4)] focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#C8A96E] focus-visible:outline-offset-4"
         >
           Start Exploring
         </button>
