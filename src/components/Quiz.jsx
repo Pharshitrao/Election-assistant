@@ -1,4 +1,6 @@
 import React, { useState } from 'react';
+import ReactGA from 'react-ga4';
+import { quizQuestions } from '../data/quizQuestions';
 
 const Quiz = () => {
   const [questions, setQuestions] = useState([]);
@@ -13,45 +15,39 @@ const Quiz = () => {
     setLoading(true);
     setError(null);
     setQuizState('loading');
+
+    ReactGA.event({
+      category: "Quiz",
+      action: "Started"
+    });
     
     try {
-      // MOCK LOGIC - No API Key required
-      await new Promise(resolve => setTimeout(resolve, 1500)); // Simulate AI thinking
+      // MOCK LOGIC - Simulate generation delay
+      await new Promise(resolve => setTimeout(resolve, 1500)); 
 
-      const mockQuestions = [
-        {
-          question: "Who appoints the Chief Election Commissioner of India?",
-          options: ["Prime Minister", "President", "Chief Justice", "Parliament"],
-          correctIndex: 1,
-          explanation: "The President of India appoints the Chief Election Commissioner and other Election Commissioners."
-        },
-        {
-          question: "What is the minimum age to vote in India?",
-          options: ["16 years", "18 years", "21 years", "25 years"],
-          correctIndex: 1,
-          explanation: "The voting age was reduced from 21 to 18 by the 61st Amendment Act in 1988."
-        },
-        {
-          question: "What does VVPAT stand for?",
-          options: ["Voter Verified Paper Audit Trail", "Voter Verifiable Paper Audit Trail", "Verified Voter Paper Account Track", "Visual Voter Paper Audit Trail"],
-          correctIndex: 1,
-          explanation: "VVPAT stands for Voter Verifiable Paper Audit Trail, allowing voters to verify their vote."
-        },
-        {
-          question: "How many members are directly elected to the Lok Sabha?",
-          options: ["530", "543", "545", "550"],
-          correctIndex: 1,
-          explanation: "543 members are directly elected from territorial constituencies in the states and UTs."
-        },
-        {
-          question: "What is the tenure of the Lok Sabha unless dissolved earlier?",
-          options: ["4 years", "5 years", "6 years", "Indefinite"],
-          correctIndex: 1,
-          explanation: "The normal term of the Lok Sabha is five years from the date of its first meeting."
-        }
-      ];
+      // Shuffle the imported questions and pick 5
+      const shuffled = [...quizQuestions].sort(() => 0.5 - Math.random());
+      const selectedQuestions = shuffled.slice(0, 5).map(q => {
+        // Keep track of which option is correct while shuffling
+        const optionsWithOriginalIndices = q.options.map((opt, index) => ({
+          text: opt,
+          isCorrect: index === q.correctIndex
+        }));
+        
+        // Shuffle the options
+        optionsWithOriginalIndices.sort(() => 0.5 - Math.random());
+        
+        // Find the new correct index
+        const newCorrectIndex = optionsWithOriginalIndices.findIndex(o => o.isCorrect);
+        
+        return {
+          ...q,
+          options: optionsWithOriginalIndices.map(o => o.text),
+          correctIndex: newCorrectIndex
+        };
+      });
 
-      setQuestions(mockQuestions);
+      setQuestions(selectedQuestions);
       setCurrentQuestionIndex(0);
       setScore(0);
       setQuizState('active');
@@ -78,6 +74,11 @@ const Quiz = () => {
         setCurrentQuestionIndex(prev => prev + 1);
       } else {
         setQuizState('finished');
+        ReactGA.event({
+          category: "Quiz",
+          action: "Completed",
+          value: score + (isCorrect ? 1 : 0)
+        });
       }
     }, 2000);
   };

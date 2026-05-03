@@ -1,10 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import Home from './pages/Home';
 import Gallery from './pages/Gallery';
 import { ThemeProvider } from './context/ThemeContext';
 import { timelineData } from './data/timelineData';
+import ReactGA from 'react-ga4';
+
+// Initialize GA4
+if (import.meta.env.VITE_GA_ID) {
+  ReactGA.initialize(import.meta.env.VITE_GA_ID);
+}
+
+function RouteTracker() {
+  const location = useLocation();
+  
+  useEffect(() => {
+    if (import.meta.env.VITE_GA_ID) {
+      ReactGA.send({ hitType: "pageview", page: location.pathname + location.search });
+    }
+  }, [location]);
+
+  return null;
+}
 
 function App() {
   const [exploredStages, setExploredStages] = useState([]);
@@ -27,6 +45,7 @@ function App() {
   return (
     <ThemeProvider>
       <Router>
+        <RouteTracker />
         <div className="min-h-screen transition-colors duration-300 relative">
           {isOffline && (
             <div className="bg-red-500 text-white text-center py-2 px-4 z-[60] fixed top-0 w-full font-bold shadow-lg">

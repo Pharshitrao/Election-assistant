@@ -1,13 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { quickQuestions } from '../data/quickQuestions';
 import { timelineData } from '../data/timelineData';
-import { GoogleGenerativeAI } from "@google/generative-ai";
-
-const genAI = new GoogleGenerativeAI(import.meta.env.VITE_GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ 
-  model: "gemini-2.5-flash",
-  systemInstruction: "You are a nonpartisan, civic-focused Indian Election Process Assistant. Explain concepts about the Indian electoral system (Lok Sabha, Rajya Sabha, Election Commission of India, EVMs, VVPATs, etc.) in simple, accessible language. Do not express political opinions, favor any candidate or party, or discuss current political controversies. Stick strictly to the mechanics, history, and rules of the Indian election process."
-});
+import ReactGA from 'react-ga4';
 
 const Chat = ({ setActiveStageId }) => {
   const [messages, setMessages] = useState(() => {
@@ -56,6 +50,10 @@ const Chat = ({ setActiveStageId }) => {
 
   const handleSend = async (textToSubmit = input) => {
     if (!textToSubmit.trim()) return;
+    if (textToSubmit.length > 500) {
+      setError("Message cannot exceed 500 characters.");
+      return;
+    }
 
     setError(null);
     const userMessage = { role: 'user', content: textToSubmit };
@@ -63,30 +61,41 @@ const Chat = ({ setActiveStageId }) => {
     setInput('');
     setIsLoading(true);
 
+    ReactGA.event({
+      category: "Chat",
+      action: "Message Sent"
+    });
+
     try {
       const firstUserIndex = messages.findIndex(m => m.role === 'user');
-      let geminiHistory = [];
+      let chatHistory = [];
       if (firstUserIndex !== -1) {
-        geminiHistory = messages.slice(firstUserIndex).map(msg => ({
-          role: msg.role === 'assistant' ? 'model' : 'user',
-          parts: [{ text: msg.content }]
-        }));
+        chatHistory = messages.slice(firstUserIndex);
       }
 
-      const chat = model.startChat({
-        history: geminiHistory
+      const response = await fetch('/api/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: textToSubmit,
+          history: chatHistory
+        }),
       });
 
-      const result = await chat.sendMessage(textToSubmit);
-      const responseContent = result.response.text();
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to get response');
+      }
 
       setMessages(prev => [...prev, {
         role: 'assistant',
-        content: responseContent
+        content: data.text
       }]);
 
     } catch (err) {
-      console.error("Chat error:", err);
       setError(err.message || "An error occurred.");
       // Remove the user message that failed so they can retry easily
       setMessages(prev => prev.slice(0, -1));

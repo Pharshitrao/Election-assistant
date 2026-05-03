@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { timelineData } from '../data/timelineData';
+import ReactGA from 'react-ga4';
 
 const Timeline = ({ exploredStages, setExploredStages, activeStageId, setActiveStageId }) => {
   const [currentStageId, setCurrentStageId] = useState(null);
@@ -12,13 +13,25 @@ const Timeline = ({ exploredStages, setExploredStages, activeStageId, setActiveS
   }, []);
 
   const handleCardClick = (id) => {
-    setActiveStageId(activeStageId === id ? null : id);
+    const isExpanding = activeStageId !== id;
+    setActiveStageId(isExpanding ? id : null);
     
+    if (isExpanding) {
+      const stage = timelineData.find(s => s.id === id);
+      if (stage) {
+        ReactGA.event({
+          category: "Timeline",
+          action: "Card Clicked",
+          label: stage.title
+        });
+      }
+    }
+
     if (!exploredStages.includes(id)) {
       setExploredStages([...exploredStages, id]);
     }
 
-    if (activeStageId !== id) {
+    if (isExpanding) {
       setTimeout(() => {
         panelRef.current?.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
       }, 100);

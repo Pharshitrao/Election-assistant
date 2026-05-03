@@ -45,6 +45,8 @@ const Header = ({ exploredCount, totalStages }) => {
             </NavLink>
           </nav>
           
+          <div id="google_translate_element" className="hidden md:block translate-y-1"></div>
+
           <button 
             onClick={toggleTheme}
             className="p-2 rounded-full hover:bg-slate-800 light:hover:bg-slate-200 transition-colors focus-visible:outline focus-visible:outline-2 focus-visible:outline-[#C8A96E] focus-visible:outline-offset-2"

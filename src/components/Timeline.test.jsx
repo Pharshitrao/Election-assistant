@@ -63,4 +63,43 @@ describe('Timeline Component', () => {
       expect(screen.getByText(firstStage.bulletPoints[0])).toBeInTheDocument();
     }
   });
+
+  it('closes detail panel when active stage is clicked again', () => {
+    const setActiveStageId = vi.fn();
+    const firstStage = timelineData[0];
+
+    render(
+      <Timeline 
+        exploredStages={[firstStage.id]} 
+        setExploredStages={vi.fn()} 
+        activeStageId={firstStage.id} 
+        setActiveStageId={setActiveStageId} 
+      />
+    );
+
+    const firstStageButton = screen.getByRole('button', { name: new RegExp(`Stage ${firstStage.stageNumber}: ${firstStage.title}`) });
+    
+    // Click the already active card
+    fireEvent.click(firstStageButton);
+    
+    // Should be called with null to close it
+    expect(setActiveStageId).toHaveBeenCalledWith(null);
+  });
+
+  it('applies stage color accents correctly', () => {
+    render(
+      <Timeline 
+        exploredStages={[]} 
+        setExploredStages={vi.fn()} 
+        activeStageId={null} 
+        setActiveStageId={vi.fn()} 
+      />
+    );
+
+    const firstStage = timelineData[0];
+    const firstStageButton = screen.getByRole('button', { name: new RegExp(`Stage ${firstStage.stageNumber}: ${firstStage.title}`) });
+
+    // The button should have the accent color as a custom property
+    expect(firstStageButton).toHaveStyle({ '--glow-color': `${firstStage.accentColor}80` });
+  });
 });
